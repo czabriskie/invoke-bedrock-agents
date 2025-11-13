@@ -65,6 +65,10 @@ follow_imports = "normal"
 ignore_missing_imports = false
 
 [[tool.mypy.overrides]]
+module = "boto3.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "botocore.*"
 ignore_missing_imports = true
 

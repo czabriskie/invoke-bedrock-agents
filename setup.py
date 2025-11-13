@@ -1,4 +1,5 @@
 """Setup script for bedrock-agent-chat."""
+
 from setuptools import find_packages, setup
 
 setup(
