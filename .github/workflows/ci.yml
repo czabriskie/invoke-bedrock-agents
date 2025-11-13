@@ -1,78 +1,78 @@
 name: CI
 
 on:
-    push:
-        branches: [main, develop]
-    pull_request:
-        branches: [main, develop]
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
 
 jobs:
-    lint:
-        name: Lint and Type Check
-        runs-on: ubuntu-latest
+  lint:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
 
-        steps:
-            - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-            - name: Set up Python
-              uses: actions/setup-python@v5
-              with:
-                  python-version: "3.11"
-                  cache: "pip"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
 
-            - name: Install dependencies
-              run: |
-                  python -m pip install --upgrade pip
-                  pip install boto3 python-dotenv pytest pytest-cov pytest-mock ruff bandit mypy 'boto3-stubs[bedrock-agent-runtime]'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install boto3 python-dotenv pytest pytest-cov pytest-mock ruff bandit mypy 'boto3-stubs[bedrock-agent-runtime]'
 
-            - name: Run ruff format check
-              run: ruff format --check .
+      - name: Run ruff format check
+        run: ruff format --check .
 
-            - name: Run ruff lint
-              run: ruff check .
+      - name: Run ruff lint
+        run: ruff check .
 
-            - name: Run mypy
-              run: mypy src/
-              env:
-                  PYTHONPATH: ${{ github.workspace }}
+      - name: Run mypy
+        run: mypy src/
+        env:
+          PYTHONPATH: ${{ github.workspace }}
 
-            - name: Run bandit
-              run: bandit -r src/ -c pyproject.toml
+      - name: Run bandit
+        run: bandit -r src/ -c pyproject.toml
 
-    test:
-        name: Test
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                python-version: ["3.9", "3.10", "3.11", "3.12"]
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
 
-        steps:
-            - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-            - name: Set up Python ${{ matrix.python-version }}
-              uses: actions/setup-python@v5
-              with:
-                  python-version: ${{ matrix.python-version }}
-                  cache: "pip"
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
 
-            - name: Install dependencies
-              run: |
-                  python -m pip install --upgrade pip
-                  pip install boto3 python-dotenv pytest pytest-cov pytest-mock ruff bandit mypy 'boto3-stubs[bedrock-agent-runtime]'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install boto3 python-dotenv pytest pytest-cov pytest-mock ruff bandit mypy 'boto3-stubs[bedrock-agent-runtime]'
 
-            - name: Run unit tests
-              run: |
-                  pytest tests/ -m "not integration" --cov=src --cov-report=xml --cov-report=term-missing
-              env:
-                  PYTHONPATH: ${{ github.workspace }}
+      - name: Run unit tests
+        run: |
+          pytest tests/ -m "not integration" --cov=src --cov-report=xml --cov-report=term-missing
+        env:
+          PYTHONPATH: ${{ github.workspace }}
 
-            - name: Upload coverage reports to Codecov
-              if: matrix.python-version == '3.11'
-              uses: codecov/codecov-action@v4
-              with:
-                  file: ./coverage.xml
-                  flags: unittests
-                  name: codecov-umbrella
-                  fail_ci_if_error: false
-              env:
-                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload coverage reports to Codecov
+        if: matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
